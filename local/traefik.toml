@@ -1,0 +1,15 @@
+# ui
+[http.routers.dspace]
+	rule = "Host(`dspace.me.local`)"
+	service = "dspace"
+
+[[http.services.dspace.loadBalancer.servers]]
+	url = "http://angular"
+
+# rest backend
+[http.routers.dspace-backend]
+	rule = "Host(`dspace.me.local`) && PathPrefix(`/server`)"
+	service = "dspace-backend"
+
+[[http.services.dspace-backend.loadBalancer.servers]]
+	url = "http://dspace:8080"

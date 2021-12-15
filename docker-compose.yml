@@ -1,0 +1,45 @@
+version: "3"
+services: 
+  dspace:
+    image: dspace/dspace:dspace-7_x
+    depends_on:
+    - db
+    volumes:
+    - /data/docker/dspace/assetstore:/dspace/assetstore
+    - ./local/local.cfg:/dspace/config/local.cfg
+    - ./local/dspace-start.sh:/start.sh
+    - solr_configs:/dspace/solr
+    command: "/bin/bash /start.sh"
+
+  db:
+    environment:
+      PGDATA: /pgdata
+    image: dspace/dspace-postgres-pgcrypto
+    volumes:
+    - /data/docker/dspace/pgdata:/pgdata
+
+  solr:
+    image: solr:8.11
+    depends_on:
+    - dspace
+    working_dir: /var/solr/data
+    volumes:
+    - ./local/solr-start.sh:/start.sh
+    - solr_configs:/opt/solr/server/solr/configsets/dspace
+    - /data/docker/dspace/solr_data:/var/solr/data
+    entrypoint: "/bin/bash /start.sh"
+
+  angular:
+   build: angular
+   image: docker.me.local/dspace/angular
+
+  traefik:
+   image: traefik:2.5
+   command: --providers.file.filename=/conf/local/dspace.toml
+   volumes:
+   - ./local/traefik.toml:/conf/local/dspace.toml
+   ports: 
+   - "8086:80"
+
+volumes:
+  solr_configs:
